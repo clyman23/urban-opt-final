@@ -2,20 +2,29 @@ import cvxpy as cp
 import numpy as np
 
 t = 3
+p = 2
 
-cost = np.array([1, 4, 1])
+cost = np.array([
+    [1, 4, 1],
+    [3, 5, 5.5]
+])
 
 revenue = cp.Variable(t)
-producing = cp.Variable(t, boolean=True)
+producing = cp.Variable((p, t), boolean=True)
 
-production_constraint = [sum(producing) <= 1]
-revenue_constraint = [revenue == cp.multiply(cost, producing)]
+production_constraint = [sum(producing[:, i] for i in range(t)) <= 1]
+revenue_constraint = [
+    revenue == sum(cp.multiply(cost[i, :], producing[i, :]) for i in range(p))
+]
 constraints = production_constraint + revenue_constraint
 
-objective = cp.Minimize(-sum(revenue))
+total_revenue = sum(revenue)
+
+objective = cp.Minimize(-total_revenue)
 
 prob = cp.Problem(objective, constraints)
 prob.solve(solver=cp.GUROBI)
 
 print(revenue.value)
 print(producing.value)
+print(total_revenue.value)
