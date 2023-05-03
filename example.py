@@ -9,8 +9,8 @@ cost = np.array([
     [3, 5, 5.5]
 ])
 
-revenue = cp.Variable(t)
-producing = cp.Variable((p, t), boolean=True)
+revenue = cp.Variable(t, name="revenue")
+producing = cp.Variable((p, t), boolean=True, name="is_producing")
 
 production_constraint = [sum(producing[:, i] for i in range(t)) <= 1]
 revenue_constraint = [
