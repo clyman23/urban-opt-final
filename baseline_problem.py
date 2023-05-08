@@ -3,6 +3,7 @@ Testing the baseline bike rebalancing problem
 """
 import cvxpy as cp
 import numpy as np
+import pandas as pd
 
 # -----Sets / indices-----
 T = 3 # Num time periods
@@ -12,19 +13,19 @@ V = 2 # Num vehicles
 # -----Parameters / input data-----
 D_ij = [] # Distance between stations i and j; may not be used
 C_s = np.array([10, 10, 10, 10, 10]) # Capacity of each station s
-C_hat_v = np.array([20, 20]) # Capacity of each vehicle v
+C_hat_v = np.array([10, 10]) # Capacity of each vehicle v
 L_t = [] # Length in minutes of time-period t (can probably just be a constant); may not be used
 d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
 d_hat_v_1 = np.array([3, 10]) # Initial num bikes in each vehicle v
 z_sv_1 = np.array([]) # Initial conditions of z; 1 if vehicle v initially at station s; may not be used
 f_plus = np.array([
-    [6, 1, 1, 1, 1],
-    [0, 4, 1, 1, 1],
-    [0, 0, 0, 3, 7]
+    [11, 1, 1, 14, 3],
+    [6, 14, 24, 1, 5],
+    [0, 0, 3, 3, 7]
 ]).T # Expected rental demand at station s at time t
 f_minus = np.array([
-    [0, 2, 1, 0, 2],
-    [0, 0, 3, 0, 0],
+    [4, 2, 1, 5, 2],
+    [0, 10, 3, 6, 0],
     [0, 0, 0, 1, 1]
 ]).T # Expected return demand at station s at time t
 
@@ -65,7 +66,7 @@ d_constraint = [
 d_constraint.extend([
     d[:, t+1] == (
         d[:, t]
-        + sum([r_plus[t][:, v] - r_minus[t][:, v] for v in range(V)])
+        - sum([r_plus[t][:, v] - r_minus[t][:, v] for v in range(V)])
         - x_plus[:, t] + x_minus[:, t]
     )
 
@@ -123,6 +124,10 @@ r_minus_limits = [
     r_minus[t][s, :] <= C_hat_v
     for s in range(S) for t in range(T)
 ]
+r_minus_limits.extend([
+    r_minus[t][s, :] >= 0
+    for s in range(S) for t in range(T)
+])
 
 # Sum all constraints
 constraints = (
@@ -145,9 +150,62 @@ prob = cp.Problem(objective, constraints)
 prob.solve(solver=cp.GUROBI, verbose=True)
 
 # -----Visualize results-----
-print("Num bikes in each station over time:")
-print(d.value)
+station_ids = [f"s{i}" for i in range(S)]
+vehicle_ids = [f"v{i}" for i in range(V)]
+time_ids = [f"t{i}" for i in range(T)]
 
-print("Where the vehicles are over time:")
+print("-----Num bikes in each station over time-----")
+print(pd.DataFrame(d.value, index=station_ids, columns=time_ids))
+
+print("-----Num of bikes in each vehicle-----")
+print(pd.DataFrame(d_hat.value, index=vehicle_ids, columns=time_ids))
+
+print("-----Where the vehicles are over time-----")
 for t in range(T):
-    print(z[t].value)
+    print(f"Time = {t}")
+    print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+
+print("-----How many bikes vehicles pick up-----")
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(r_plus[t].value, index=station_ids, columns=vehicle_ids))
+
+print("-----How many bikes vehicles drop off-----")
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(r_minus[t].value, index=station_ids, columns=vehicle_ids))
+
+print("-----Successful trips-----")
+print(pd.DataFrame(x_plus.value, index=station_ids, columns=time_ids))
+
+print("-----Successful returns-----")
+print(pd.DataFrame(x_minus.value, index=station_ids, columns=time_ids))
+
+lost_rental_demand =  f_plus - x_plus.value
+print("-----Lost rental demand-----")
+print(pd.DataFrame(lost_rental_demand, index=station_ids, columns=time_ids))
+
+lost_return_demand = f_minus - x_minus.value
+print("-----Lost return demand-----")
+print(pd.DataFrame(lost_return_demand, index=station_ids, columns=time_ids))
+
+print("-----Objective value-----")
+print(objective.value)
+
+
+print("==========Results over time==========")
+for t in range(T):
+    print(f"*****In time period {t}:*****")
+    for v in range(V):
+        print(f"Vehicle {v} is at station: {z[t].value[:, v]}")
+        print(f"Vehicle {v} has {d_hat.value[v, t]} bikes in the vehicle")
+        print(f"Vehicle {v} leaves {r_minus[t].value[:, v]} at the station")
+        print(f"Vehicle {v} picks up {r_plus[t].value[:, v]} at the station")
+    for s in range(S):
+        print(f"At station {s}:")
+        print(f"There are {d.value[s, t]} bikes already")
+        print(f"We expect a rental demand of {f_plus[s, t]}")
+        print(f"We expect a return demand of {f_minus[s, t]}")
+        print(f"We have {x_plus.value[s, t]} successful trips leaving the station")
+        print(f"We have {x_minus.value[s, t]} successful returns to the station")
+        print()
