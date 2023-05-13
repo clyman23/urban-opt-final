@@ -49,17 +49,17 @@ f_minus = pd.pivot_table(
 ).fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
 
 # -----Variables-----
-d = cp.Variable((S, T)) # Num bikes at station s at time t
-d_hat = cp.Variable((V, T)) # Num bikes in vehicle v at time t
-x_plus = cp.Variable((S, T)) # Num of successful bike trips starting at stations s at time t
-x_minus = cp.Variable((S, T)) # Num of successful returns starting at stations s at time t
+d = cp.Variable((S, T), integer=True) # Num bikes at station s at time t
+d_hat = cp.Variable((V, T), integer=True) # Num bikes in vehicle v at time t
+x_plus = cp.Variable((S, T), integer=True) # Num of successful bike trips starting at stations s at time t
+x_minus = cp.Variable((S, T), integer=True) # Num of successful returns starting at stations s at time t
 # Need to Frankenstein n-dimensional variables for n>2 in cvxpy...
 r_plus = {} # Num of bikes vehicle v picks up at stations s at time t
 r_minus = {} # Num of bikes vehicle v unloads up at stations s at time t
 z = {} # 1 if vehicle v is at station s at time t
 for t in range(T):
-    r_plus[t] = cp.Variable((S, V))
-    r_minus[t] = cp.Variable((S, V))
+    r_plus[t] = cp.Variable((S, V), integer=True)
+    r_minus[t] = cp.Variable((S, V), integer=True)
     z[t] = cp.Variable((S, V), boolean=True)
 
 # -----Constraints-----
@@ -138,6 +138,10 @@ x_minus_limits.extend([
 r_plus_limits = [
     0 <= r_plus[t] for t in range(T)
 ]
+r_plus_limits.extend([
+    r_plus[t][s, :] <= C_hat_v
+    for s in range(S) for t in range(T)
+])
 
 r_minus_limits = [
     r_minus[t][s, :] <= C_hat_v
@@ -156,11 +160,10 @@ constraints = (
 
 # -----Objective-----
 objective = (
-    sum([f_plus - x_plus])
-    + sum([f_minus - x_minus])
+    (sum(sum(f_plus - x_plus)) + sum(sum(f_minus - x_minus)))
 )
 
-objective = cp.Minimize(sum(sum(objective)))
+objective = cp.Minimize(objective)
 
 # -----Define problem-----
 prob = cp.Problem(objective, constraints)
