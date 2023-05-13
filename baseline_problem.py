@@ -6,28 +6,47 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 3 # Num time periods
-S = 5 # Num stations
-V = 2 # Num vehicles
+T = 10 # Num time periods
+S = 30 # Num stations
+V = 1 # Num vehicles
 
-# -----Parameters / input data-----
+# -----Reading input data-----
+# Initial inventory
+INVENTORY_FILEPATH = "./Initial_Inven.json"
+inven_init = pd.read_json(INVENTORY_FILEPATH)
+RENTALS_FILEPATH = "./rentals.csv"
+rentals_df = pd.read_csv(RENTALS_FILEPATH, usecols=["rentals", "time_period", "station_id"])
+RETURNS_FILEPATH = "./returns.csv"
+returns_df = pd.read_csv(RETURNS_FILEPATH, usecols=["returns", "time_period", "station_id"])
+
+# -----Setting parameters / input data-----
 D_ij = [] # Distance between stations i and j; may not be used
-C_s = np.array([10, 10, 10, 10, 10]) # Capacity of each station s
-C_hat_v = np.array([10, 10]) # Capacity of each vehicle v
+C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
+C_hat_v = np.array([10, 10, 10, 10, 10]) # Capacity of each vehicle v
+C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
 L_t = [] # Length in minutes of time-period t (can probably just be a constant); may not be used
-d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
-d_hat_v_1 = np.array([3, 10]) # Initial num bikes in each vehicle v
+# d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
+d_s_1 = inven_init[0].to_numpy()
+d_hat_v_1 = np.array([3, 10, 7, 8, 1]) # Initial num bikes in each vehicle v
+d_hat_v_1 = d_hat_v_1[:V] # Subset when we want a toy model with a small number of vehicles
 z_sv_1 = np.array([]) # Initial conditions of z; 1 if vehicle v initially at station s; may not be used
-f_plus = np.array([
-    [11, 1, 1, 14, 3],
-    [6, 14, 24, 1, 5],
-    [0, 0, 3, 3, 7]
-]).T # Expected rental demand at station s at time t
-f_minus = np.array([
-    [4, 2, 1, 5, 2],
-    [0, 10, 3, 6, 0],
-    [0, 0, 0, 1, 1]
-]).T # Expected return demand at station s at time t
+# f_plus = np.array([
+#     [11, 1, 1, 14, 3],
+#     [6, 14, 24, 1, 5],
+#     [0, 0, 3, 3, 7]
+# ]).T # Expected rental demand at station s at time t
+f_plus = pd.pivot_table(
+    rentals_df, values="rentals", index="station_id", columns="time_period"
+).fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
+
+# f_minus = np.array([
+#     [4, 2, 1, 5, 2],
+#     [0, 10, 3, 6, 0],
+#     [0, 0, 0, 1, 1]
+# ]).T # Expected return demand at station s at time t
+f_minus = pd.pivot_table(
+    returns_df, values="returns", index="station_id", columns="time_period"
+).fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
 
 # -----Variables-----
 d = cp.Variable((S, T)) # Num bikes at station s at time t
