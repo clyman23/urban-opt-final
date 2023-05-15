@@ -1,0 +1,12 @@
+name: urban-opt
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - cvxpy
+  - numpy
+  - pandas
+  - jupyter
+  - pip:
+    - gurobipy
