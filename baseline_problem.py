@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 10 # Num time periods
+T = 30 # Num time periods   
 S = 30 # Num stations
-V = 1 # Num vehicles
+V = 2 # Num vehicles *********
 
 # -----Reading input data-----
 # Initial inventory
@@ -22,12 +22,12 @@ returns_df = pd.read_csv(RETURNS_FILEPATH, usecols=["returns", "time_period", "s
 # -----Setting parameters / input data-----
 D_ij = [] # Distance between stations i and j; may not be used
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
-C_hat_v = np.array([10, 10, 10, 10, 10]) # Capacity of each vehicle v
+C_hat_v = np.array([2, 2, 40, 40, 40]) # Capacity of each vehicle v             #Note [2, 2] does not work
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
 L_t = [] # Length in minutes of time-period t (can probably just be a constant); may not be used
 # d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
 d_s_1 = inven_init[0].to_numpy()
-d_hat_v_1 = np.array([3, 10, 7, 8, 1]) # Initial num bikes in each vehicle v
+d_hat_v_1 = np.array([0, 0, 7, 8, 1]) # Initial num bikes in each vehicle v
 d_hat_v_1 = d_hat_v_1[:V] # Subset when we want a toy model with a small number of vehicles
 z_sv_1 = np.array([]) # Initial conditions of z; 1 if vehicle v initially at station s; may not be used
 # f_plus = np.array([
@@ -213,21 +213,55 @@ print(pd.DataFrame(lost_return_demand, index=station_ids, columns=time_ids))
 
 print("-----Objective value-----")
 print(objective.value)
+print()
+print('Successful classic trips:', np.sum(x_plus.value))
+print('Successful classic returns:', np.sum(x_minus.value))
+print()
+print('Lost classic rental demand:', np.sum(lost_rental_demand))
+print('Lost classic return demand:', np.sum(lost_return_demand))
 
 
-print("==========Results over time==========")
-for t in range(T):
-    print(f"*****In time period {t}:*****")
-    for v in range(V):
-        print(f"Vehicle {v} is at station: {z[t].value[:, v]}")
-        print(f"Vehicle {v} has {d_hat.value[v, t]} bikes in the vehicle")
-        print(f"Vehicle {v} leaves {r_minus[t].value[:, v]} at the station")
-        print(f"Vehicle {v} picks up {r_plus[t].value[:, v]} at the station")
-    for s in range(S):
-        print(f"At station {s}:")
-        print(f"There are {d.value[s, t]} bikes already")
-        print(f"We expect a rental demand of {f_plus[s, t]}")
-        print(f"We expect a return demand of {f_minus[s, t]}")
-        print(f"We have {x_plus.value[s, t]} successful trips leaving the station")
-        print(f"We have {x_minus.value[s, t]} successful returns to the station")
-        print()
+# print("==========Results over time==========")
+# for t in range(T):
+#     print(f"*****In time period {t}:*****")
+#     for v in range(V):
+#         print(f"Vehicle {v} is at station: {z[t].value[:, v]}")
+#         print(f"Vehicle {v} has {d_hat.value[v, t]} bikes in the vehicle")
+#         print(f"Vehicle {v} leaves {r_minus[t].value[:, v]} at the station")
+#         print(f"Vehicle {v} picks up {r_plus[t].value[:, v]} at the station")
+#     for s in range(S):
+#         print(f"At station {s}:")
+#         print(f"There are {d.value[s, t]} bikes already")
+#         print(f"We expect a rental demand of {f_plus[s, t]}")
+#         print(f"We expect a return demand of {f_minus[s, t]}")
+#         print(f"We have {x_plus.value[s, t]} successful trips leaving the station")
+#         print(f"We have {x_minus.value[s, t]} successful returns to the station")
+#         print()
+
+# def check_is_zero(val):
+#     return False if val == 0 else True
+
+# print("==========Results over time==========")
+# for t in range(T):
+#     print(f"*****In time period {t}:*****")
+#     for v in range(V):
+#         print(f"Vehicle {v} is at station: {z[t].value[:, v]}")
+#         print(f"Vehicle {v} has {d_hat.value[v, t]} bikes in the vehicle")
+#         print(f"Vehicle {v} leaves {r_minus[t].value[:, v]} at the station")
+#         print(f"Vehicle {v} picks up {r_plus[t].value[:, v]} at the station")
+#     for s in range(S):
+#         print(f"At station {s}:")
+#         if check_is_zero(d.value[s, t]):
+#             print(f"There are {d.value[s, t]} bikes already")
+#         if check_is_zero(f_plus[s, t]):
+#             print(f"We expect a rental demand of {f_plus[s, t]}")
+#         if check_is_zero(f_minus[s, t]):
+#             print(f"We expect a return demand of {f_minus[s, t]}")
+#         if check_is_zero(x_plus.value[s, t]):
+#             print(f"We have {x_plus.value[s, t]} successful trips leaving the station")
+#         if check_is_zero(x_minus.value[s, t]):
+#             print(f"We have {x_minus.value[s, t]} successful returns to the station")
+#         print()
+
+# df = pd.DataFrame(columns=[T])
+# print(df)

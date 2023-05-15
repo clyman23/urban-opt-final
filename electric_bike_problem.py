@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 20 # Num time periods
+T = 30 # Num time periods
 S = 30 # Num stations
 V = 2 # Num vehicles
 
@@ -27,9 +27,9 @@ returns_e_df = pd.read_csv(RETURNS_E_FILEPATH, usecols=["returns", "time_period"
 # -----Setting parameters / input data-----
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
 C_s = C_s[:S] # Subset number of stations for a toy model
-C_hat_v = np.array([5, 5, 5, 5, 5]) # Capacity of each vehicle v for classic bikes
+C_hat_v = np.array([1, 1, 40, 40, 40]) # Capacity of each vehicle v for classic bikes
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
-C_tilde_v = np.array([5, 5, 5, 5, 5]) # Capacity of each vehicle for e-bikes
+C_tilde_v = np.array([1, 1, 40, 40, 40]) # Capacity of each vehicle for e-bikes
 C_tilde_v = C_tilde_v[:V]
 
 d_s_1 = inven_init[0].to_numpy() - 3 # Initial num of classic bikes at station s
@@ -37,7 +37,7 @@ d_s_1_mask = d_s_1 < 0
 d_s_1[d_s_1_mask] = 0
 d_s_1 = d_s_1[:S]
 d_bar_s_1 = np.ones(S) * 3 # Initial num of e-bikes at station s
-d_hat_v_1 = np.array([3, 3, 3, 3, 1]) # Initial num classic bikes in each vehicle v
+d_hat_v_1 = np.array([0, 0, 3, 3, 1]) # Initial num classic bikes in each vehicle v
 d_hat_v_1 = d_hat_v_1[:V] # Subset when we want a toy model with a small number of vehicles
 d_tilde_v_1 = np.array([0, 0, 2, 3, 0]) # Initial num e-bikes in each vehicle v
 d_tilde_v_1 = d_tilde_v_1[:V] # Subset when we want a toy model with a small number of vehicles
@@ -323,6 +323,16 @@ print(pd.DataFrame(lost_ebike_return_demand, index=station_ids, columns=time_ids
 
 print("-----Objective value-----")
 print(objective.value)
+print()
+print('Successful classic trips:', np.sum(x_plus.value))
+print('Successful classic returns:', np.sum(x_minus.value))
+print('Successful ebike trips:', np.sum(x_bar_plus.value))
+print('Successful ebike returns:', np.sum(x_bar_minus.value))
+print()
+print('Lost classic rental demand:', np.sum(lost_rental_demand))
+print('Lost classic return demand:', np.sum(lost_return_demand))
+print('Lost ebike rental demand:', np.sum(lost_ebike_rental_demand))
+print('Lost ebike return demand:', np.sum(lost_ebike_return_demand))
 
 
 # print("==========Results over time==========")
