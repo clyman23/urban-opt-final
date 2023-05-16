@@ -27,9 +27,9 @@ returns_e_df = pd.read_csv(RETURNS_E_FILEPATH, usecols=["returns", "time_period"
 # -----Setting parameters / input data-----
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
 C_s = C_s[:S] # Subset number of stations for a toy model
-C_hat_v = np.array([1, 1, 40, 40, 40]) # Capacity of each vehicle v for classic bikes
+C_hat_v = np.array([20, 20, 40, 40, 40]) # Capacity of each vehicle v for classic bikes
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
-C_tilde_v = np.array([1, 1, 40, 40, 40]) # Capacity of each vehicle for e-bikes
+C_tilde_v = np.array([20, 20, 40, 40, 40]) # Capacity of each vehicle for e-bikes
 C_tilde_v = C_tilde_v[:V]
 
 d_s_1 = inven_init[0].to_numpy() - 3 # Initial num of classic bikes at station s
@@ -334,6 +334,21 @@ print('Lost classic return demand:', np.sum(lost_return_demand))
 print('Lost ebike rental demand:', np.sum(lost_ebike_rental_demand))
 print('Lost ebike return demand:', np.sum(lost_ebike_return_demand))
 
+
+vehs = [[] for y in range(V)]
+
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+    for v in range(V):
+        if np.where(z[t].value!=0)[0][v] not in vehs[v]:
+            vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
+vehs = vehs[::-1] # swap axes.
+
+print("-----Where did the Vehicles Go?-----")
+for v in range(V):
+    cnt = len(vehs[v])
+    print(f'Total unique stations vistied by vehicle {v}: {cnt}')
 
 # print("==========Results over time==========")
 # for t in range(T):

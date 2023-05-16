@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 30 # Num time periods   
+T = 10 # Num time periods   
 S = 30 # Num stations
 V = 2 # Num vehicles *********
 
@@ -22,7 +22,7 @@ returns_df = pd.read_csv(RETURNS_FILEPATH, usecols=["returns", "time_period", "s
 # -----Setting parameters / input data-----
 D_ij = [] # Distance between stations i and j; may not be used
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
-C_hat_v = np.array([2, 2, 40, 40, 40]) # Capacity of each vehicle v             #Note [2, 2] does not work
+C_hat_v = np.array([40, 40, 40, 40, 40]) # Capacity of each vehicle v
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
 L_t = [] # Length in minutes of time-period t (can probably just be a constant); may not be used
 # d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
@@ -182,10 +182,22 @@ print(pd.DataFrame(d.value, index=station_ids, columns=time_ids))
 print("-----Num of bikes in each vehicle-----")
 print(pd.DataFrame(d_hat.value, index=vehicle_ids, columns=time_ids))
 
-print("-----Where the vehicles are over time-----")
-for t in range(T):
-    print(f"Time = {t}")
-    print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+# print("-----Where the vehicles are over time-----")
+
+# vehs = [[] for y in range(V)]
+
+# for t in range(T):
+#     print(f"Time = {t}")
+#     print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+#     for v in range(V):
+#         if np.where(z[t].value!=0)[0][v] not in vehs[v]:
+#             vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
+# vehs = vehs[::-1] # swap axes.
+
+# print("-----Where did the Vehicles Go?-----")
+# for v in range(V):
+#     cnt = len(vehs[v])
+#     print(f'Total unique stations vistied by vehicle {v}: {cnt}')
 
 print("-----How many bikes vehicles pick up-----")
 for t in range(T):
