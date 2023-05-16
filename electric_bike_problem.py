@@ -46,19 +46,19 @@ a_classic = 1 # Value of classic ride
 a_electric = 2 # Value of electric ride
 w_s = np.random.randint(1, size=(S, T)) # Num "dead" e-bikes at each station at time t
 
+time_periods = list(range(96*500))
 f_plus = pd.pivot_table(
     rentals_df, values="rentals", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:S, :T] # Subset when we want a toy model with a small number of time periods
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:S, :T] # Subset when we want a toy model with a small number of time periods
 f_minus = pd.pivot_table(
     returns_df, values="returns", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:S, :T] # Subset when we want a toy model with a small number of time periods
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:S, :T] # Subset when we want a toy model with a small number of time periods
 f_bar_plus = pd.pivot_table(
     rentals_e_df, values="rentals", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:S, :T]
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:S, :T]
 f_bar_minus = pd.pivot_table(
     returns_e_df, values="returns", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:S, :T]
-
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:S, :T]
 
 # -----Variables-----
 d = cp.Variable((S, T), integer=True) # Num classic bikes at station s at time t

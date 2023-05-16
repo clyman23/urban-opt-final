@@ -35,9 +35,11 @@ z_sv_1 = np.array([]) # Initial conditions of z; 1 if vehicle v initially at sta
 #     [6, 14, 24, 1, 5],
 #     [0, 0, 3, 3, 7]
 # ]).T # Expected rental demand at station s at time t
+
+time_periods = list(range(96*500))
 f_plus = pd.pivot_table(
     rentals_df, values="rentals", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
 
 # f_minus = np.array([
 #     [4, 2, 1, 5, 2],
@@ -46,7 +48,7 @@ f_plus = pd.pivot_table(
 # ]).T # Expected return demand at station s at time t
 f_minus = pd.pivot_table(
     returns_df, values="returns", index="station_id", columns="time_period"
-).fillna(0).to_numpy()[:, :T] # Subset when we want a toy model with a small number of time periods
+).reindex(time_periods, axis='columns').fillna(0).to_numpy()[:, :T]# Subset when we want a toy model with a small number of time periods
 
 # -----Variables-----
 d = cp.Variable((S, T), integer=True) # Num bikes at station s at time t
