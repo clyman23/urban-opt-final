@@ -178,66 +178,81 @@ time_ids = [f"t{i}" for i in range(T)]
 
 print("-----Num bikes in each station over time-----")
 print(pd.DataFrame(d.value, index=station_ids, columns=time_ids))
-diff = 0
-for s in range(S):
-    diff += np.max(d.value[s]) - np.min(d.value[s])
-print(f'total voitility of system: {diff}')
 
-# print("-----Num of bikes in each vehicle-----")
-# print(pd.DataFrame(d_hat.value, index=vehicle_ids, columns=time_ids))
+print("-----Num of bikes in each vehicle-----")
+print(pd.DataFrame(d_hat.value, index=vehicle_ids, columns=time_ids))
 
-# print("-----Where the vehicles are over time-----")
+print("-----Where the vehicles are over time-----")
 
-# vehs = [[] for y in range(V)]
+vehs = [[] for y in range(V)]
 
-# for t in range(T):
-#     print(f"Time = {t}")
-#     print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
-#     for v in range(V):
-#         if np.where(z[t].value!=0)[0][v] not in vehs[v]:
-#             vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
-# vehs = vehs[::-1] # swap axes.
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+    for v in range(V):
+        if np.where(z[t].value!=0)[0][v] not in vehs[v]:
+            vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
+vehs = vehs[::-1] # swap axes.
 
-# print("-----Where did the Vehicles Go?-----")
-# for v in range(V):
-#     cnt = len(vehs[v])
-#     print(f'Total unique stations vistied by vehicle {v}: {cnt}')
+print("-----Where did the Vehicles Go?-----")
+for v in range(V):
+    cnt = len(vehs[v])
+    print(f'Total unique stations vistied by vehicle {v}: {cnt}')
 
-# print("-----How many bikes vehicles pick up-----")
-# for t in range(T):
-#     print(f"Time = {t}")
-#     print(pd.DataFrame(r_plus[t].value, index=station_ids, columns=vehicle_ids))
+print("-----How many bikes vehicles pick up-----")
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(r_plus[t].value, index=station_ids, columns=vehicle_ids))
 
-# print("-----How many bikes vehicles drop off-----")
-# for t in range(T):
-#     print(f"Time = {t}")
-#     print(pd.DataFrame(r_minus[t].value, index=station_ids, columns=vehicle_ids))
+print("-----How many bikes vehicles drop off-----")
+for t in range(T):
+    print(f"Time = {t}")
+    print(pd.DataFrame(r_minus[t].value, index=station_ids, columns=vehicle_ids))
 
-# print("-----Successful trips-----")
-# print(pd.DataFrame(x_plus.value, index=station_ids, columns=time_ids))
+print("-----Successful trips-----")
+print(pd.DataFrame(x_plus.value, index=station_ids, columns=time_ids))
 
-# print("-----Successful returns-----")
-# print(pd.DataFrame(x_minus.value, index=station_ids, columns=time_ids))
+print("-----Successful returns-----")
+print(pd.DataFrame(x_minus.value, index=station_ids, columns=time_ids))
 
-# lost_rental_demand =  f_plus - x_plus.value
-# print("-----Lost rental demand-----")
-# print(pd.DataFrame(lost_rental_demand, index=station_ids, columns=time_ids))
+lost_rental_demand =  f_plus - x_plus.value
+print("-----Lost rental demand-----")
+print(pd.DataFrame(lost_rental_demand, index=station_ids, columns=time_ids))
 
-# lost_return_demand = f_minus - x_minus.value
-# print("-----Lost return demand-----")
-# print(pd.DataFrame(lost_return_demand, index=station_ids, columns=time_ids))
+lost_return_demand = f_minus - x_minus.value
+print("-----Lost return demand-----")
+print(pd.DataFrame(lost_return_demand, index=station_ids, columns=time_ids))
 
-# print("-----Objective value-----")
-# print(objective.value)
-# print()
-# print('Successful classic trips:', np.sum(x_plus.value))
-# print('Successful classic returns:', np.sum(x_minus.value))
-# print()
-# print('Lost classic rental demand:', np.sum(lost_rental_demand))
-# print('Lost classic return demand:', np.sum(lost_return_demand))
+print("-----Objective value-----")
+print(objective.value)
 
+def visualize():
+    print('Successful classic trips:', np.sum(x_plus.value))
+    print('Successful classic returns:', np.sum(x_minus.value))
+    print()
+    print('Lost classic rental demand:', np.sum(lost_rental_demand))
+    print('Lost classic return demand:', np.sum(lost_return_demand))
+    print()
+    diff = 0
+    for s in range(S):
+        diff += np.max(d.value[s]) - np.min(d.value[s])
+    print(f'total voitility of classic + ebikes: {diff}')
+    print()
+    vehs = [[] for y in range(V)]
+    for t in range(T):
+        # print(f"Time = {t}")
+        # print(pd.DataFrame(z[t].value, index=station_ids, columns=vehicle_ids))
+        for v in range(V):
+            if np.where(z[t].value!=0)[0][v] not in vehs[v]:
+                vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
+    vehs = vehs[::-1] # swap axes.
 
+    print("-----Where did the Vehicles Go?-----")
+    for v in range(V):
+        cnt = len(vehs[v])
+        print(f'Total unique stations vistied by vehicle {v}: {cnt}')
 
+visualize()
 
 
 
