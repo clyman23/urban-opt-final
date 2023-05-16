@@ -281,11 +281,11 @@ print(pd.DataFrame(d.value, index=station_ids, columns=time_ids))
 diff = 0
 diff_bar = 0
 for s in range(S):
-    diff += np.max(d.value[s]) - np.min(d.value[s])
-    diff_bar += np.max(d_bar.value[s]) - np.min(d_bar.value[s])
+    diff += np.max(d.value[s] + d_bar.value[s]) - np.min(d.value[s] + d_bar.value[s])
+    # diff_bar += np.max(d_bar.value[s]) - np.min(d_bar.value[s])
 
 print(f'total voitility of classic bikes: {diff}')
-print(f'total voitility of electic bikes: {diff_bar}')
+# print(f'total voitility of electic bikes: {diff_bar}')
 
 # print("-----Num e-bikes in each station over time-----")
 # print(pd.DataFrame(d_bar.value, index=station_ids, columns=time_ids))
