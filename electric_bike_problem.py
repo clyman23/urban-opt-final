@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 10 # Num time periods
+T = 30 # Num time periods
 S = 30 # Num stations
-V = 2 # Num vehicles
+V = 1 # Num vehicles
 
 # -----Reading input data-----
 # Initial inventory
@@ -27,9 +27,9 @@ returns_e_df = pd.read_csv(RETURNS_E_FILEPATH, usecols=["returns", "time_period"
 # -----Setting parameters / input data-----
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
 C_s = C_s[:S] # Subset number of stations for a toy model
-C_hat_v = np.array([20, 20, 40, 40, 40]) # Capacity of each vehicle v for classic bikes
+C_hat_v = np.array([40, 40, 40, 40, 40]) # Capacity of each vehicle v for classic bikes
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
-C_tilde_v = np.array([20, 20, 40, 40, 40]) # Capacity of each vehicle for e-bikes
+C_tilde_v = np.array([40, 40, 40, 40, 40]) # Capacity of each vehicle for e-bikes
 C_tilde_v = C_tilde_v[:V]
 
 d_s_1 = inven_init[0].to_numpy() - 3 # Initial num of classic bikes at station s
@@ -320,12 +320,14 @@ print(pd.DataFrame(lost_ebike_rental_demand, index=station_ids, columns=time_ids
 lost_ebike_return_demand = f_bar_minus - x_bar_minus.value
 print("-----Lost e-bike return demand-----")
 print(pd.DataFrame(lost_ebike_return_demand, index=station_ids, columns=time_ids))
-
+print("-----Ebike + Classic-----")
+print()
 print("-----Objective value-----")
 print(objective.value)
 print()
 
 def visualize():
+    print("-----Trip info-----")
     print('Successful classic trips:', np.sum(x_plus.value))
     print('Successful classic returns:', np.sum(x_minus.value))
     print('Successful ebike trips:', np.sum(x_bar_plus.value))
@@ -336,10 +338,15 @@ def visualize():
     print('Lost ebike rental demand:', np.sum(lost_ebike_rental_demand))
     print('Lost ebike return demand:', np.sum(lost_ebike_return_demand))
     print()
+
+    print('Successful total trips:', np.sum(x_plus.value) + np.sum(x_bar_plus.value))
+    print('Successful total returns:', np.sum(x_minus.value)+np.sum(x_bar_minus.value))
+    print()
     diff = 0
+    print("-----Station Volatility -----")
     for s in range(S):
         diff += np.max(d.value[s] + d_bar.value[s]) - np.min(d.value[s] + d_bar.value[s])
-    print(f'total voitility of classic + ebikes: {diff}')
+    print(f'total volatility of classic + ebikes: {diff}')
     print()
     vehs = [[] for y in range(V)]
     for t in range(T):
@@ -349,12 +356,11 @@ def visualize():
             if np.where(z[t].value!=0)[0][v] not in vehs[v]:
                 vehs[v] = np.hstack((vehs[v],np.where(z[t].value!=0)[0][v]))
     vehs = vehs[::-1] # swap axes.
-    print()
 
     print("-----Where did the Vehicles Go?-----")
     for v in range(V):
         cnt = len(vehs[v])
-        print(f'Total unique stations vistied by vehicle {v}: {cnt}')
+        print(f'Total unique stations visited by vehicle {v}: {cnt}')
 
 visualize()
 

@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 
 # -----Sets / indices-----
-T = 10 # Num time periods   
+T = 30 # Num time periods   
 S = 30 # Num stations
-V = 2 # Num vehicles *********
+V = 1 # Num vehicles *********
 
 # -----Reading input data-----
 # Initial inventory
@@ -22,7 +22,7 @@ returns_df = pd.read_csv(RETURNS_FILEPATH, usecols=["returns", "time_period", "s
 # -----Setting parameters / input data-----
 D_ij = [] # Distance between stations i and j; may not be used
 C_s = np.concatenate([[40] * 5, [20] * 25]) # Capacity of each station s
-C_hat_v = np.array([40, 40, 40, 40, 40]) # Capacity of each vehicle v
+C_hat_v = np.array([2, 2, 40, 40, 40]) # Capacity of each vehicle v
 C_hat_v = C_hat_v[:V] # Subset when we want a toy model with a small number of vehicles
 L_t = [] # Length in minutes of time-period t (can probably just be a constant); may not be used
 # d_s_1 = np.array([5, 9, 10, 4, 3]) # Initial num bikes at each station s
@@ -222,11 +222,13 @@ print(pd.DataFrame(lost_rental_demand, index=station_ids, columns=time_ids))
 lost_return_demand = f_minus - x_minus.value
 print("-----Lost return demand-----")
 print(pd.DataFrame(lost_return_demand, index=station_ids, columns=time_ids))
-
+print("---------Classic---------")
+print()
 print("-----Objective value-----")
 print(objective.value)
-
+print()
 def visualize():
+    print("-----Trip info-----")
     print('Successful classic trips:', np.sum(x_plus.value))
     print('Successful classic returns:', np.sum(x_minus.value))
     print()
@@ -236,7 +238,8 @@ def visualize():
     diff = 0
     for s in range(S):
         diff += np.max(d.value[s]) - np.min(d.value[s])
-    print(f'total voitility of classic + ebikes: {diff}')
+    print("-----Station Volatility -----")
+    print(f'total volatility: {diff}')
     print()
     vehs = [[] for y in range(V)]
     for t in range(T):
@@ -250,7 +253,7 @@ def visualize():
     print("-----Where did the Vehicles Go?-----")
     for v in range(V):
         cnt = len(vehs[v])
-        print(f'Total unique stations vistied by vehicle {v}: {cnt}')
+        print(f'Total unique stations visited by vehicle {v}: {cnt}')
 
 visualize()
 
